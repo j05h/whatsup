@@ -1,10 +1,15 @@
-This is (so far) a status API to keep track of upness or downness of services at various sites. It is mostly a super thin layer on top of a Cassandra database.
+ABOUT
+  This is (so far) a status API to keep track of upness or downness of services
+  at various sites.  It is mostly a super thin layer on top of Cassandra.
 
-Architecturally, it is very simple.
+  Architecturally, it is very simple.
 
-<nginx/apache> -> <flask app server> -> <cassandra cluster>
+  <nginx/apache> -> <flask app server> -> <cassandra cluster>
 
-The nginx and flask apps are completely stateless, allowing for easy horizontal scalability. There is no complex authentication systems required, only HTTP Basic over SSL. The cassandra cluster (as well as the web front ends) should scale across multiple datacenters and regions to allow for the most resiliency with the service.
+  Flask app is completely stateless, allowing for easy horizontal scalability.
+  There is no complex authentication systems required. The Cassandra cluster
+  (as well as the web front ends) should scale across multiple datacenters
+  and regions to allow for the most resiliency with the service.
 
 INSTALLATION
   ./newb
@@ -19,9 +24,14 @@ USAGE:
 
   Update a service:
 
-    curl -i -H "Content-Type: application/json" -X \
-      POST -d '{"site":"localhost","service":"testing","message":"nominal","state":1}' \
+    curl -i -H "Content-Type: application/json" -X POST -d \
+      '{"site":"localhost","service":"testing","message":"nominal","state":1}' \
       localhost:5000/api/v1.0/status
 
+    'site' is the location in which the service runs
+    'service' is the name of the service
+    'messsage' is a detailed message
+    'description' is a more detailed description of the error
+    'state' is either 1 (UP); 0 (COMPROMISED); -1 (DOWN)
 
 
