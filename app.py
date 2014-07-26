@@ -34,6 +34,7 @@ def get_today():
     return jsonify( { 'status': rows } )
 
 @app.route('/api/v1.0/status/<string:status_id>', methods = ['GET'])
+@auth.login_required
 def get_status(status_id):
     row = get_session().execute('SELECT * from stats WHERE id = '+status_id)
     if not row:
@@ -47,6 +48,7 @@ def has_status_keys(json):
             'state' in json)
 
 @app.route('/api/v1.0/status', methods = ['POST'])
+@auth.login_required
 def create_status():
     if not request.json or not has_status_keys(request.json):
         abort(400, "Missing JSON or keys in "+request.data)
@@ -67,6 +69,7 @@ def create_status():
     return jsonify( { 'status': 'success' } ), 201
 
 @app.route('/api/v1.0/status/<string:status_id>', methods = ['PUT'])
+@auth.login_required
 def update_status(status_id):
     status = filter(lambda t: t['id'] == status_id, status)
     if len(status) == 0:
@@ -85,6 +88,7 @@ def update_status(status_id):
     return jsonify( { 'status': status[0] } )
 
 @app.route('/api/v1.0/status/<int:status_id>', methods = ['DELETE'])
+@auth.login_required
 def delete_status(status_id):
     status = filter(lambda t: t['id'] == status_id, status)
     if len(status) == 0:

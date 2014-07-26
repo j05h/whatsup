@@ -24,7 +24,7 @@ USAGE:
 
   Update a service:
 
-    curl -i -H "Content-Type: application/json" -X POST -d \
+    curl -u admin:testing -i -H "Content-Type: application/json" -X POST -d \
       '{"site":"localhost","service":"testing","message":"nominal","state":1}' \
       localhost:5000/api/v1.0/status
 
