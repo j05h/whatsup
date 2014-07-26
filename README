@@ -7,7 +7,7 @@ ABOUT
   <nginx/apache> -> <flask app server> -> <cassandra cluster>
 
   Flask app is completely stateless, allowing for easy horizontal scalability.
-  There is no complex authentication systems required. The Cassandra cluster
+  There are no complex authentication systems required. The Cassandra cluster
   (as well as the web front ends) should scale across multiple datacenters
   and regions to allow for the most resiliency with the service.
 
