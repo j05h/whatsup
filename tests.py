@@ -1,5 +1,8 @@
 #!.env/bin/python
 import os
+
+os.environ['FLASK_ENV'] = 'test'
+
 import app
 import unittest
 import tempfile
@@ -14,9 +17,8 @@ from flask import json, jsonify
 class FlaskrTestCase(unittest.TestCase):
   @classmethod
   def setUpClass(cls):
-    app.app.config['TESTING'] = True
-    app.app.config['keyspace'] = 'whatsuptesting%s' % str(uuid.uuid1()).replace('-', '')
-    cls.migrator = Migrator(keyspace = app.app.config['keyspace'])
+    app.env.from_object('config')
+    cls.migrator = Migrator(app.app.config)
     cls.migrator.create_keyspace()
     cls.app = app.app.test_client()
 

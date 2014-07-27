@@ -18,19 +18,17 @@ def unauthorized():
 @app.route('/api/v1.0/status', methods = ['GET'])
 @auth.login_required
 def get_stati():
-    print request.headers
-    data = Data()
-    return jsonify( { 'status': data.today() } )
+    return jsonify( { 'status': data().today() } )
 
 @app.route('/api/v1.0/status/today', methods = ['GET'])
 @auth.login_required
 def get_today():
-    return jsonify( { 'status': data.today() } )
+    return jsonify( { 'status': data().today() } )
 
 @app.route('/api/v1.0/status/<string:status_id>', methods = ['GET'])
 @auth.login_required
 def get_status(status_id):
-    row = data.get_session().execute('SELECT * from stats WHERE id = '+status_id)
+    row = data().get_session().execute('SELECT * from stats WHERE id = '+status_id)
     if not row:
         abort(404, status_id)
     return jsonify( { 'status': row } )
@@ -46,7 +44,7 @@ def has_status_keys(json):
 def create_status():
     if not request.json or not has_status_keys(request.json):
         abort(400, "Missing JSON or keys in "+request.data)
-    status = data.get_session().execute(
+    status = data().get_session().execute(
         """
         INSERT INTO stats (id, created_at, site, service, message, description, state)
         VALUES (uuid(), dateof(now()), %s, %s, %s, %s, %s)
@@ -94,6 +92,8 @@ def delete_status(status_id):
 def not_found(error):
     return make_response(jsonify( { 'error': 'Not found' } ), 404)
 
+def data():
+  return Data()
 
 # TODO: Do we need this?
 def make_public(status):

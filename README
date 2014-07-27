@@ -12,9 +12,20 @@ ABOUT
   and regions to allow for the most resiliency with the service.
 
 INSTALLATION
-  ./newb
-  # CONFIGURE
-  ./cassandra.ddl.py
+  # install Homebrew for easy package management
+  $ ruby -e "$(curl -fsSL https://raw.github.com/Homebrew/homebrew/go/install)"
+  # install Cassandra
+  $ brew install cassandra
+  # and its CLI
+  $ pip install cql
+  # launch Cassanrda
+  $ launchctl load /usr/local/opt/cassandra/homebrew.mxcl.cassandra.plist
+  # set up virtualenv
+  $ ./newb
+  # migrate database
+  $ ./migrator.py
+  # run tests
+  $ ./tests.py
 
 USAGE:
 
