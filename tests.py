@@ -25,7 +25,7 @@ class FlaskrTestCase(unittest.TestCase):
   def setUp(self):
     self.migrator.create_tables()
     basic = ('Basic %s' % base64.b64encode('admin:testing'))
-    self.headers = dict(Authorization = basic)
+    self.headers = [('Authorization', basic), ('Content-Type', 'application/json')]
 
   @classmethod
   def tearDownClass(cls):
@@ -36,17 +36,27 @@ class FlaskrTestCase(unittest.TestCase):
 
   def test_404(self):
     rv = self.app.get('/api/not/here')
-    assert 404 == rv.status_code
+    self.assertEqual(404, rv.status_code)
 
   def test_unauthorized(self):
     rv = self.app.get('/api/v1.0/status')
-    assert 403 == rv.status_code
+    self.assertEqual(403, rv.status_code)
     assert 'Unauthorized access' in rv.data
 
   def test_empty_db(self):
-    rv = self.app.open('/api/v1.0/status', headers = self.headers)
+    rv = self.app.get('/api/v1.0/status', headers = self.headers)
     data = json.loads(rv.data)
     assert [] == data['status']
+
+  def test_post_stat(self):
+    json_data = {'site': 'local', 'service': 'testing', 'message':'nominal', 'state':1}
+    json_string = json.dumps(json_data)
+
+    h = self.headers + [('Content-Length', len(json_string))]
+    rv = self.app.post('/api/v1.0/status', data = json_string, headers = h)
+    self.assertEqual(201, rv.status_code)
+    data = json.loads(rv.data)
+    self.assertEqual('success', data['status'])
 
 if __name__ == '__main__':
   unittest.main()
