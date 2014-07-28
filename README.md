@@ -1,4 +1,4 @@
-# ABOUT
+### ABOUT
   This is (so far) a status API to keep track of upness or downness of services
   at various sites.  It is mostly a super thin layer on top of Cassandra.
 
@@ -13,7 +13,7 @@
   (as well as the web front ends) should scale across multiple datacenters
   and regions to allow for the most resiliency with the service.
 
-# INSTALLATION
+### INSTALLATION
 ```
   # install Homebrew for easy package management
   $ ruby -e "$(curl -fsSL https://raw.github.com/Homebrew/homebrew/go/install)"
@@ -31,15 +31,15 @@
   $ ./tests.py
 ```
 
-# USAGE:
+### USAGE:
 
-###  Pull the latest status:
+####  Pull the latest status:
 
 ```
     curl -u admin:testing localhost:5000/api/v1.0/status/today
 ```
 
-###  Update a service:
+####  Update a service:
 
 ```
     curl -u admin:testing -i -H "Content-Type: application/json" -X POST -d \
@@ -52,5 +52,6 @@
     'messsage' is a detailed message
     'description' is a more detailed description of the error
     'state' is either 1 (UP); 0 (COMPROMISED); -1 (DOWN)
+
 
 
