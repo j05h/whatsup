@@ -13,6 +13,8 @@ from migrator import Migrator
 from werkzeug.datastructures import Headers
 from werkzeug.test import Client
 from flask import json, jsonify
+from app.status import Status
+from freezegun import freeze_time
 
 class FlaskrTestCase(unittest.TestCase):
   @classmethod
@@ -22,14 +24,16 @@ class FlaskrTestCase(unittest.TestCase):
     cls.migrator.create_keyspace()
     cls.app = app.app.test_client()
 
-  def setUp(self):
-    self.migrator.create_tables()
-    basic = ('Basic %s' % base64.b64encode('admin:testing'))
-    self.headers = [('Authorization', basic), ('Content-Type', 'application/json')]
-
   @classmethod
   def tearDownClass(cls):
     cls.migrator.destroy_all_the_things()
+
+  def setUp(self):
+    self.migrator.create_tables()
+    self.migrator.create_indicies()
+    basic = ('Basic %s' % base64.b64encode('admin:testing'))
+    self.headers = [('Authorization', basic), ('Content-Type', 'application/json')]
+
 
   def tearDown(self):
     self.migrator.destroy_the_tables()
@@ -48,15 +52,65 @@ class FlaskrTestCase(unittest.TestCase):
     data = json.loads(rv.data)
     assert [] == data['status']
 
-  def test_post_stat(self):
-    json_data = {'site': 'local', 'service': 'testing', 'message':'nominal', 'state':1}
-    json_string = json.dumps(json_data)
 
-    h = self.headers + [('Content-Length', len(json_string))]
-    rv = self.app.post('/api/v1.0/status', data = json_string, headers = h)
+  def json_data(self, **kwargs):
+    default = {'site': 'local', 'service': 'testing', 'message':'nominal', 'state':1}
+    default.update(kwargs)
+    return default
+
+  def json_string(self, **kwargs):
+    return json.dumps(self.json_data(**kwargs))
+
+  def post_stat(self, **kwargs):
+    j = self.json_string(**kwargs)
+    h = self.headers + [('Content-Length', len(j))]
+    return self.app.post('/api/v1.0/status', data = j, headers = h)
+
+  def test_post_stat(self):
+    rv = self.post_stat()
     self.assertEqual(201, rv.status_code)
     data = json.loads(rv.data)
     self.assertEqual('success', data['status'])
+
+  def test_get_current(self):
+    # populate 4 states on the different services
+    self.post_stat(service = 'foo')
+    self.post_stat(service = 'bar', state = 0)
+    self.post_stat(service = 'baz', state = -1)
+    self.post_stat(service = 'qux')
+
+    rv = self.app.get('/api/v1.0/status/current', headers = self.headers)
+
+    self.assertEqual(200, rv.status_code)
+
+    data = json.loads(rv.data)
+    self.assertEqual(4, len(data['status']))
+    self.assertEqual(data['status'][0]['states'].popitem()[1], '0|'+self.json_data()['message'])
+
+  def test_get_rolled_up_current(self):
+    # populate 4 states across different times
+    with freeze_time("2014-01-02 12:00:01"):
+      self.post_stat()
+    with freeze_time("2014-01-02 12:00:02"):
+      self.post_stat(state = 0)
+    with freeze_time("2014-01-02 12:00:03"):
+      self.post_stat(state = -1)
+    with freeze_time("2014-01-02 12:00:04"):
+      self.post_stat()
+
+    rv = self.app.get('/api/v1.0/status/current', headers = self.headers)
+
+    self.assertEqual(200, rv.status_code)
+
+    data = json.loads(rv.data)
+
+    status = data['status'][0]
+
+    self.assertEqual(1, len(data['status']))
+    self.assertEqual(4, len(status['states']))
+    self.assertEqual(status['states'].values()[3], '1|'+self.json_data()['message'])
+    self.assertEqual(1, status['current_state'])
+    self.assertEqual(-1, status['worst_state'])
 
 if __name__ == '__main__':
   unittest.main()

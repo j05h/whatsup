@@ -34,14 +34,18 @@ class Migrator(object):
       self.get_session().execute(
         """
         CREATE TABLE stats (
-          id uuid,
-          created_at timestamp,
+          updated_at timestamp,
+          year int,
+          month int,
+          date int,
           site text,
           service text,
-          message text,
-          description text,
-          state int,
-          PRIMARY KEY (id)
+          current_state int,
+          current_message text,
+          worst_state int,
+          worst_message text,
+          states map <double, text>,
+          PRIMARY KEY (service, site, year, month, date)
         );
         """
       )
@@ -49,10 +53,7 @@ class Migrator(object):
       print "    %s" % e.message
 
   def create_indicies(self):
-    self.create_index("created_at")
-    self.create_index("site")
-    self.create_index("service")
-
+    return True
 
   def create_index(self, name):
     try:

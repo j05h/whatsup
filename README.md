@@ -36,7 +36,7 @@
 ####  Pull the latest status:
 
 ```
-    curl -u admin:testing localhost:5000/api/v1.0/status/today
+    curl -u admin:testing localhost:5000/api/v1.0/status/current
 ```
 
 ####  Update a service:

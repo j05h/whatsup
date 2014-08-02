@@ -10,6 +10,3 @@ class Data(object):
     session = self.cluster.connect(app.config['KEYSPACE'])
     session.row_factory = dict_factory
     return session
-
-  def today(self):
-    return self.get_session().execute('SELECT * from stats');
