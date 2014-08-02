@@ -47,6 +47,18 @@
       localhost:5000/api/v1.0/status
 ```
 
+```
+    curl -u admin:testing -i -H "Content-Type: application/json" -X POST -d \
+      '{"site":"remotehost","service":"verifying","message":"not quite right","state":0}' \
+      localhost:5000/api/v1.0/status
+```
+
+```
+    curl -u admin:testing -i -H "Content-Type: application/json" -X POST -d \
+      '{"site":"localhost","service":"checking","message":"borked","state":-1}' \
+      localhost:5000/api/v1.0/status
+```
+
     'site' is the location in which the service runs
     'service' is the name of the service
     'messsage' is a detailed message

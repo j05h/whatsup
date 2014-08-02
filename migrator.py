@@ -30,7 +30,6 @@ class Migrator(object):
 
   def create_tables(self):
     try:
-
       self.get_session().execute(
         """
         CREATE TABLE stats (
@@ -44,8 +43,8 @@ class Migrator(object):
           current_message text,
           worst_state int,
           worst_message text,
-          states map <double, text>,
-          PRIMARY KEY (service, site, year, month, date)
+          states list <text>,
+          PRIMARY KEY ((year, month, date), site, service)
         );
         """
       )

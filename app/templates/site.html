@@ -26,12 +26,7 @@
                 <h1 class="title">{{ title }}</h1>
                 <nav>
                     <ul>
-                        {% if nxt %}
-                        <li><a href="/history/{{nxt}}">{{nxt}}</a></li>
-                        {% else %}
                         <li><a href="/index.html">Today</a></li>
-                        {% endif %}
-                        <li><a href="/history/{{prv}}">{{prv}}</a></li>
                     </ul>
                 </nav>
             </header>
@@ -39,28 +34,24 @@
 
         <div class="main-container">
             <div class="main wrapper clearfix">
-
+                {% import 'macros.html' as macros %}
                 <article>
-                    {% for site, stats in current.iteritems() %}
+                    {% for stat in site %}
                     <header>
-                      <h1><a href="/site/{{site}}">{{ site }}</a></h1>
+                      <h1>
+                        {{ macros.state_icon(stat.current_state) }}
+                        {{ stat.service }} is {{stat.current_message}}
+                      </h1>
                     </header>
                     <section>
                         <ul>
-                        {% for stat in stats %}
-                          <li>
-                          {% if stat.current_state == 1 %}
-                          <i class="good fa fa-thumbs-up fa-lg"></i>
-                          {% elif stat.current_state == 0 %}
-                          <i class="meh fa fa-wrench fa-lg"></i>
-                          {% else %}
-                          <i class="bad fa fa-thumbs-down fa-lg"></i>
-                          {% endif %}
-                          As of
-                          {{ stat.updated_at | time_ago }}
-                          {{stat.service}} is {{stat.current_message}}
+                          {% for state in stat.states %}
+                          <li title="{{ state.created_at }}">
+                          {{ macros.state_icon(state.state) }}
+                          {{ state.created_at | time_ago }}
+                          {{ state.message }}
                           </li>
-                        {% endfor %}
+                          {% endfor %}
                         </ul>
                     </section>
                     {% endfor %}
@@ -86,4 +77,5 @@
         <script src="/static/js/main.js"></script>
     </body>
 </html>
+
 

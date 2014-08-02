@@ -1,0 +1,9 @@
+{% macro state_icon(state) -%}
+  {% if state == 1 %}
+  <i class="good fa fa-thumbs-up fa-lg"></i>
+  {% elif state == 0 %}
+  <i class="meh fa fa-wrench fa-lg"></i>
+  {% else %}
+  <i class="bad fa fa-thumbs-down fa-lg"></i>
+  {% endif %}
+{%- endmacro %}

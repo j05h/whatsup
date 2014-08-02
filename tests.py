@@ -6,7 +6,6 @@ os.environ['FLASK_ENV'] = 'test'
 import app
 import unittest
 import tempfile
-#### REMOVE THIS AND ITS EVIL KIN import testing.cassandra
 import uuid
 import base64
 from migrator import Migrator
@@ -73,6 +72,8 @@ class FlaskrTestCase(unittest.TestCase):
     self.assertEqual('success', data['status'])
 
   def test_get_current(self):
+    with freeze_time("2014-01-02 12:00:01"):
+      self.post_stat()
     # populate 4 states on the different services
     self.post_stat(service = 'foo')
     self.post_stat(service = 'bar', state = 0)
@@ -84,8 +85,10 @@ class FlaskrTestCase(unittest.TestCase):
     self.assertEqual(200, rv.status_code)
 
     data = json.loads(rv.data)
+    status = data['status'][0]
+
     self.assertEqual(4, len(data['status']))
-    self.assertEqual(data['status'][0]['states'].popitem()[1], '0|'+self.json_data()['message'])
+    self.assertEqual(self.json_data()['message'], status['states'][0]['message'])
 
   def test_get_rolled_up_current(self):
     # populate 4 states across different times
@@ -98,7 +101,8 @@ class FlaskrTestCase(unittest.TestCase):
     with freeze_time("2014-01-02 12:00:04"):
       self.post_stat()
 
-    rv = self.app.get('/api/v1.0/status/current', headers = self.headers)
+    with freeze_time("2014-01-02 13:14:15"):
+      rv = self.app.get('/api/v1.0/status/current', headers = self.headers)
 
     self.assertEqual(200, rv.status_code)
 
@@ -108,7 +112,7 @@ class FlaskrTestCase(unittest.TestCase):
 
     self.assertEqual(1, len(data['status']))
     self.assertEqual(4, len(status['states']))
-    self.assertEqual(status['states'].values()[3], '1|'+self.json_data()['message'])
+    self.assertEqual(self.json_data()['message'], status['states'][0]['message'])
     self.assertEqual(1, status['current_state'])
     self.assertEqual(-1, status['worst_state'])
 
