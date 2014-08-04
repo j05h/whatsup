@@ -1,4 +1,5 @@
 ### ABOUT
+
   This is (so far) a status API to keep track of upness or downness of services
   at various sites.  It is mostly a super thin layer on top of Cassandra.
 
@@ -14,15 +15,16 @@
   and regions to allow for the most resiliency with the service.
 
 ### INSTALLATION
+
+Requirements:
+
+* Ansible >= 1.6
+* Vagrant >= 1.6
+* virtualenv
+
 ```
-  # install Homebrew for easy package management
-  $ ruby -e "$(curl -fsSL https://raw.github.com/Homebrew/homebrew/go/install)"
   # install Cassandra
-  $ brew install cassandra
-  # and its CLI
-  $ pip install cql
-  # launch Cassanrda
-  $ launchctl load /usr/local/opt/cassandra/homebrew.mxcl.cassandra.plist
+  $ vagrant up
   # set up virtualenv
   $ ./newb
   # migrate database
@@ -64,6 +66,3 @@
     'messsage' is a detailed message
     'description' is a more detailed description of the error
     'state' is either 1 (UP); 0 (COMPROMISED); -1 (DOWN)
-
-
-

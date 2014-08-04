@@ -1,0 +1,9 @@
+---
+- hosts: whatsup-cassandra
+  pre_tasks:
+    - apt: update_cache=yes cache_valid_time=21600 # 60 * 60 * 6
+  roles:
+    - Ansibles.cassandra
+  tasks:
+    - apt: name=python-pip
+    - pip: name=cql
