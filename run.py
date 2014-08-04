@@ -1,4 +1,4 @@
 #!.env/bin/python
 
-from app import app
+from whatsup.app import app
 app.run(debug = True)

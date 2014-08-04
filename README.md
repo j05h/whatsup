@@ -6,7 +6,7 @@
   Architecturally, it is very simple.
 
 ```
-  <nginx/apache> -> <flask app server> -> <cassandra cluster>
+    <nginx/apache> -> <flask app server> -> <cassandra cluster>
 ```
 
   Flask app is completely stateless, allowing for easy horizontal scalability.
@@ -14,23 +14,17 @@
   (as well as the web front ends) should scale across multiple datacenters
   and regions to allow for the most resiliency with the service.
 
-### INSTALLATION
+### TESTING
 
 Requirements:
 
 * Ansible >= 1.6
 * Vagrant >= 1.6
-* virtualenv
+* tox
 
 ```
-  # install Cassandra
-  $ vagrant up
-  # set up virtualenv
-  $ ./newb
-  # migrate database
-  $ ./migrator.py
-  # run tests
-  $ ./tests.py
+    $ vagrant up
+    $ tox
 ```
 
 ### USAGE:

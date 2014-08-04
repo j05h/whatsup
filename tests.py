@@ -3,7 +3,7 @@ import os
 
 os.environ['FLASK_ENV'] = 'test'
 
-import app
+import whatsup.app as app
 import unittest
 import tempfile
 import uuid
@@ -12,7 +12,7 @@ from migrator import Migrator
 from werkzeug.datastructures import Headers
 from werkzeug.test import Client
 from flask import json, jsonify
-from app.status import Status
+from whatsup.app.status import Status
 from freezegun import freeze_time
 
 class FlaskrTestCase(unittest.TestCase):

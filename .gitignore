@@ -1,4 +1,6 @@
-.env
-*.pyc
-*.pyo
+*.py?
+.env/
 .vagrant/
+.tox/
+*.egg-info/
+*.egg/
