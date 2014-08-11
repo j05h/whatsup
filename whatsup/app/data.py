@@ -1,4 +1,4 @@
-from app import app
+from whatsup.app import app
 from cassandra.cluster import Cluster
 from cassandra.query import dict_factory
 

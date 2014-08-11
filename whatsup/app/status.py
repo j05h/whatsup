@@ -1,4 +1,4 @@
-from data import Data
+from whatsup.data import Data
 import datetime
 import time
 import random

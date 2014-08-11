@@ -1,5 +1,5 @@
-from app import app
-from status import Status
+from whatsup.app import app
+from whatsup.status import Status
 from flask import Flask, json, jsonify, abort, make_response, request, url_for
 from flask.ext.httpauth import HTTPBasicAuth
 

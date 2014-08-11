@@ -5,5 +5,5 @@ app = Flask(__name__)
 env = Environments(app)
 env.from_object('config')
 
-from app import views
-from app import api
+from whatsup.app import views
+from whatsup.app import api

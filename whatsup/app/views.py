@@ -1,7 +1,7 @@
-from app import app
+from whatsup.app import app
 from flask import render_template
 import humanize
-from status import Status
+from whatsup.status import Status
 import datetime
 import time
 
