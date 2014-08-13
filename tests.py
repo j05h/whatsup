@@ -1,120 +1,121 @@
 #!.env/bin/python
+import base64
 import os
+import unittest
+
+from flask import json
+from freezegun import freeze_time
+
+from migrator import Migrator
+import whatsup.app as app
 
 os.environ['FLASK_ENV'] = 'test'
 
-import whatsup.app as app
-import unittest
-import tempfile
-import uuid
-import base64
-from migrator import Migrator
-from werkzeug.datastructures import Headers
-from werkzeug.test import Client
-from flask import json, jsonify
-from whatsup.app.status import Status
-from freezegun import freeze_time
 
 class FlaskrTestCase(unittest.TestCase):
-  @classmethod
-  def setUpClass(cls):
-    app.env.from_object('config')
-    cls.migrator = Migrator(app.app.config)
-    cls.migrator.create_keyspace()
-    cls.app = app.app.test_client()
+    @classmethod
+    def setUpClass(cls):
+        app.env.from_object('config')
+        cls.migrator = Migrator(app.app.config)
+        cls.migrator.create_keyspace()
+        cls.app = app.app.test_client()
 
-  @classmethod
-  def tearDownClass(cls):
-    cls.migrator.destroy_all_the_things()
+    @classmethod
+    def tearDownClass(cls):
+        cls.migrator.destroy_all_the_things()
 
-  def setUp(self):
-    self.migrator.create_tables()
-    self.migrator.create_indicies()
-    basic = ('Basic %s' % base64.b64encode('admin:testing'))
-    self.headers = [('Authorization', basic), ('Content-Type', 'application/json')]
+    def setUp(self):
+        self.migrator.create_tables()
+        self.migrator.create_indicies()
+        basic = ('Basic %s' % base64.b64encode('admin:testing'))
+        self.headers = [('Authorization', basic),
+                        ('Content-Type', 'application/json')]
 
+    def tearDown(self):
+        self.migrator.destroy_the_tables()
 
-  def tearDown(self):
-    self.migrator.destroy_the_tables()
+    def test_404(self):
+        rv = self.app.get('/api/not/here')
+        self.assertEqual(404, rv.status_code)
 
-  def test_404(self):
-    rv = self.app.get('/api/not/here')
-    self.assertEqual(404, rv.status_code)
+    def test_unauthorized(self):
+        rv = self.app.get('/api/v1.0/status')
+        self.assertEqual(403, rv.status_code)
+        assert 'Unauthorized access' in rv.data
 
-  def test_unauthorized(self):
-    rv = self.app.get('/api/v1.0/status')
-    self.assertEqual(403, rv.status_code)
-    assert 'Unauthorized access' in rv.data
+    def test_empty_db(self):
+        rv = self.app.get('/api/v1.0/status', headers=self.headers)
+        data = json.loads(rv.data)
+        assert [] == data['status']
 
-  def test_empty_db(self):
-    rv = self.app.get('/api/v1.0/status', headers = self.headers)
-    data = json.loads(rv.data)
-    assert [] == data['status']
+    def json_data(self, **kwargs):
+        default = {'site': 'local',
+                   'service': 'testing',
+                   'message': 'nominal',
+                   'state': 1}
+        default.update(kwargs)
+        return default
 
+    def json_string(self, **kwargs):
+        return json.dumps(self.json_data(**kwargs))
 
-  def json_data(self, **kwargs):
-    default = {'site': 'local', 'service': 'testing', 'message':'nominal', 'state':1}
-    default.update(kwargs)
-    return default
+    def post_stat(self, **kwargs):
+        j = self.json_string(**kwargs)
+        h = self.headers + [('Content-Length', len(j))]
+        return self.app.post('/api/v1.0/status', data=j, headers=h)
 
-  def json_string(self, **kwargs):
-    return json.dumps(self.json_data(**kwargs))
+    def test_post_stat(self):
+        rv = self.post_stat()
+        self.assertEqual(201, rv.status_code)
+        data = json.loads(rv.data)
+        self.assertEqual('success', data['status'])
 
-  def post_stat(self, **kwargs):
-    j = self.json_string(**kwargs)
-    h = self.headers + [('Content-Length', len(j))]
-    return self.app.post('/api/v1.0/status', data = j, headers = h)
+    def test_get_current(self):
+        with freeze_time("2014-01-02 12:00:01"):
+            self.post_stat()
+        # populate 4 states on the different services
+        self.post_stat(service='foo')
+        self.post_stat(service='bar', state=0)
+        self.post_stat(service='baz', state=-1)
+        self.post_stat(service='qux')
 
-  def test_post_stat(self):
-    rv = self.post_stat()
-    self.assertEqual(201, rv.status_code)
-    data = json.loads(rv.data)
-    self.assertEqual('success', data['status'])
+        rv = self.app.get('/api/v1.0/status/current', headers=self.headers)
 
-  def test_get_current(self):
-    with freeze_time("2014-01-02 12:00:01"):
-      self.post_stat()
-    # populate 4 states on the different services
-    self.post_stat(service = 'foo')
-    self.post_stat(service = 'bar', state = 0)
-    self.post_stat(service = 'baz', state = -1)
-    self.post_stat(service = 'qux')
+        self.assertEqual(200, rv.status_code)
 
-    rv = self.app.get('/api/v1.0/status/current', headers = self.headers)
+        data = json.loads(rv.data)
+        status = data['status'][0]
 
-    self.assertEqual(200, rv.status_code)
+        self.assertEqual(4, len(data['status']))
+        self.assertEqual(self.json_data()['message'],
+                         status['states'][0]['message'])
 
-    data = json.loads(rv.data)
-    status = data['status'][0]
+    def test_get_rolled_up_current(self):
+        # populate 4 states across different times
+        with freeze_time("2014-01-02 12:00:01"):
+            self.post_stat()
+        with freeze_time("2014-01-02 12:00:02"):
+            self.post_stat(state=0)
+        with freeze_time("2014-01-02 12:00:03"):
+            self.post_stat(state=-1)
+        with freeze_time("2014-01-02 12:00:04"):
+            self.post_stat()
 
-    self.assertEqual(4, len(data['status']))
-    self.assertEqual(self.json_data()['message'], status['states'][0]['message'])
+        with freeze_time("2014-01-02 13:14:15"):
+            rv = self.app.get('/api/v1.0/status/current', headers=self.headers)
 
-  def test_get_rolled_up_current(self):
-    # populate 4 states across different times
-    with freeze_time("2014-01-02 12:00:01"):
-      self.post_stat()
-    with freeze_time("2014-01-02 12:00:02"):
-      self.post_stat(state = 0)
-    with freeze_time("2014-01-02 12:00:03"):
-      self.post_stat(state = -1)
-    with freeze_time("2014-01-02 12:00:04"):
-      self.post_stat()
+        self.assertEqual(200, rv.status_code)
 
-    with freeze_time("2014-01-02 13:14:15"):
-      rv = self.app.get('/api/v1.0/status/current', headers = self.headers)
+        data = json.loads(rv.data)
 
-    self.assertEqual(200, rv.status_code)
+        status = data['status'][0]
 
-    data = json.loads(rv.data)
-
-    status = data['status'][0]
-
-    self.assertEqual(1, len(data['status']))
-    self.assertEqual(4, len(status['states']))
-    self.assertEqual(self.json_data()['message'], status['states'][0]['message'])
-    self.assertEqual(1, status['current_state'])
-    self.assertEqual(-1, status['worst_state'])
+        self.assertEqual(1, len(data['status']))
+        self.assertEqual(4, len(status['states']))
+        self.assertEqual(self.json_data()['message'],
+                         status['states'][0]['message'])
+        self.assertEqual(1, status['current_state'])
+        self.assertEqual(-1, status['worst_state'])
 
 if __name__ == '__main__':
-  unittest.main()
+    unittest.main()
