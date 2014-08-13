@@ -29,6 +29,12 @@ Requirements:
 
 ### USAGE:
 
+```
+    $ vagrant up
+    $ ./newb
+    $ ./run.py
+```
+
 ####  Pull the latest status:
 
 ```
