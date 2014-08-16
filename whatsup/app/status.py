@@ -3,7 +3,7 @@ import time
 
 from flask import json
 
-from whatsup.data import Data
+from whatsup.app.data import Data
 
 
 class Status(object):

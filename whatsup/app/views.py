@@ -4,7 +4,7 @@ import humanize
 from flask import render_template
 
 from whatsup.app import app
-from whatsup.status import Status
+from whatsup.app.status import Status
 
 
 @app.route('/')

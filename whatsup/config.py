@@ -5,7 +5,7 @@ class Config(object):
 
 class Development(Config):
     DEBUG = True
-    NODES = ['192.168.40.11']
+    NODES = ['127.0.0.1']
     KEYSPACE = 'whatsup_development'
 
 

@@ -79,7 +79,7 @@ class Migrator(object):
 if __name__ == '__main__':
     app = Flask(__name__)
     env = Environments(app)
-    env.from_object('config')
+    env.from_object('whatsup.config')
 
     migrator = Migrator(app.config)
     migrator.migrate()

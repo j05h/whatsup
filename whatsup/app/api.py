@@ -7,7 +7,7 @@ from flask import url_for
 from flask.ext.httpauth import HTTPBasicAuth
 
 from whatsup.app import app
-from whatsup.status import Status
+from whatsup.app.status import Status
 
 auth = HTTPBasicAuth()
 
