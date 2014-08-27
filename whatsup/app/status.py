@@ -31,6 +31,7 @@ class Status(object):
         j = json.dumps({'created_at': now.isoformat(),
                         'state': dat['state'],
                         'message': dat['message']})
+
         self.session().execute(
             """
             UPDATE stats SET
@@ -61,16 +62,16 @@ class Status(object):
 
     def last_status(self, site, service):
         lst = self.session().execute(
-            ("SELECT * FROM stats "
-             "WHERE year = %s "
-             "and month = %s "
-             "and date = %s "
-             "and site = %s "
-             "and service = %s") % (self.today().year,
-                                    self.today().month,
-                                    self.today().day,
-                                    site,
-                                    service)
+            """
+            SELECT * FROM stats
+            WHERE year = %s and month = %s and date = %s and site = %s and service = %s
+            """,
+            [self.today().year,
+             self.today().month,
+             self.today().day,
+             site,
+             service
+             ]
         )
 
         if(len(lst) == 0):

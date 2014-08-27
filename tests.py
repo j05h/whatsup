@@ -15,7 +15,7 @@ os.environ['FLASK_ENV'] = 'test'
 class FlaskrTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        app.env.from_object('config')
+        app.env.from_object('whatsup.config')
         cls.migrator = Migrator(app.app.config)
         cls.migrator.create_keyspace()
         cls.app = app.app.test_client()
