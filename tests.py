@@ -7,15 +7,16 @@ from flask import json
 from freezegun import freeze_time
 
 from migrator import Migrator
+
+os.environ['FLASK_ENV'] = 'Test'
+# should be AFTER FLASK_ENV is set to Test
 import whatsup.app as app
-
-os.environ['FLASK_ENV'] = 'test'
-
 
 class FlaskrTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         app.env.from_object('whatsup.config')
+        print "Testing in %s" % app.app.config['KEYSPACE']
         cls.migrator = Migrator(app.app.config)
         cls.migrator.create_keyspace()
         cls.app = app.app.test_client()
