@@ -3,6 +3,7 @@
   pre_tasks:
     - apt: update_cache=yes cache_valid_time=21600 # 60 * 60 * 6
   roles:
+    - Stouts.limits
     - Ansibles.cassandra
   tasks:
     - apt: name=python-pip
