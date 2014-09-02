@@ -18,7 +18,10 @@ Vagrant.configure('2') do |config|
       cassandra_listen_address: map['address'],
       cassandra_rpc_address: map['address'],
       limits_limits: [
-         "*    -    nofile    65535",
+         "* - nofile 100000",
+         "* - memlock unlimited",
+         "* - nproc 32768",
+         "* - as unlimited",
          "* soft nofile 32768",
          "* hard nofile 32768",
          "root soft nofile 32768",
