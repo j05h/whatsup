@@ -56,9 +56,9 @@
                           {% else %}
                           <i class="bad fa fa-thumbs-down fa-lg"></i>
                           {% endif %}
-                          As of
-                          {{ stat.updated_at | time_ago }}
-                          {{stat.service}} is {{stat.current_message}}
+                          <strong>{{stat.service}}</strong>
+                          was <i>{{stat.current_message}}</i>
+                          as of {{ stat.updated_at | time_ago }}
                           </li>
                         {% endfor %}
                         </ul>
